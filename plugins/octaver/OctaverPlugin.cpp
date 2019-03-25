@@ -26,6 +26,7 @@ private:
 public:
     enum ParameterId
     {
+        P_Bypass,
         P_SemitoneShift,
         P_Wet,
         P_Dry,
@@ -34,6 +35,7 @@ public:
 
     OctaverPlugin()
         : Plugin(P_Count, 0, 0),
+          bypass_(false),
           wet_(M_SQRT1_2),
           dry_(M_SQRT1_2)
     {
@@ -80,6 +82,9 @@ protected:
     void initParameter(uint32_t index, Parameter &parameter) override
     {
         switch (index) {
+        case P_Bypass:
+            parameter.designation = kParameterDesignationBypass;
+            break;
         case P_SemitoneShift:
             parameter.hints = kParameterIsInteger;
             parameter.name = "Semitone shift";
@@ -113,6 +118,9 @@ protected:
     {
         float value = 0;
         switch (index) {
+        case P_Bypass:
+            value = bypass_;
+            break;
         case P_SemitoneShift: {
             float k = fOctaver[0].color();
             value = 12 * std::log2(k);
@@ -133,6 +141,9 @@ protected:
     void setParameterValue(uint32_t index, float value) override
     {
         switch (index) {
+        case P_Bypass:
+            bypass_ = value > 0.5f;
+            break;
         case P_SemitoneShift: {
             float k = std::exp2(value * (1.0f / 12));
             for (unsigned c = 0; c < DISTRHO_PLUGIN_NUM_INPUTS; ++c)
@@ -152,6 +163,12 @@ protected:
 
     void run(const float **inputs, float **outputs, uint32_t frames) override
     {
+        if (bypass_) {
+            for (unsigned c = 0; c < DISTRHO_PLUGIN_NUM_INPUTS; ++c)
+                std::copy(inputs[c], inputs[c] + frames, outputs[c]);
+            return;
+        }
+
         float wet = wet_;
         float dry = dry_;
 
@@ -173,6 +190,7 @@ protected:
     // -------------------------------------------------------------------------------------------------------
 
 private:
+    bool bypass_;
     float wet_;
     float dry_;
 
