@@ -39,6 +39,8 @@ protected:
 class Colorizer : public Effect1to1
 {
 public:
+    Colorizer();
+    ~Colorizer();
     void init(double sr) override;
     void clear() override;
     float color() const { return color_; }
@@ -57,6 +59,8 @@ private:
 class Mutator : public Effect2to1
 {
 public:
+    Mutator();
+    ~Mutator();
     void init(double sr) override;
     void clear() override;
     float mix() const { return mix_; }

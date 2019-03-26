@@ -31,13 +31,21 @@ void Effect2to1::process(float *out, const float *in1, const float *in2, unsigne
 //------------------------------------------------------------------------------
 namespace IF {
 
+Colorizer::Colorizer()
+{
+    color_ = 2;
+}
+
+Colorizer::~Colorizer()
+{
+}
+
 void Colorizer::init(double sr)
 {
     hilb_.init(sr);
     amfm_.init(sr);
     oscph_ = 0;
     onedsr_ = 1 / sr;
-    color_ = 2;
 }
 
 void Colorizer::clear()
@@ -87,6 +95,15 @@ void Colorizer::do_process(float *out, const float *in, unsigned nframes)
 //------------------------------------------------------------------------------
 namespace IF {
 
+Mutator::Mutator()
+{
+    mix_ = 0.5;
+}
+
+Mutator::~Mutator()
+{
+}
+
 void Mutator::init(double sr)
 {
     hilb1_.init(sr);
@@ -94,7 +111,6 @@ void Mutator::init(double sr)
     amfm1_.init(sr);
     amfm2_.init(sr);
     oscph_ = 0;
-    mix_ = 0.5;
     onedsr_ = 1 / sr;
 }
 
@@ -165,6 +181,12 @@ static const int chorus_detune_mult[4] = {
 
 Chorus::Chorus()
 {
+    detune_ = 0.001;
+
+    hilb_.reset(new Hilbert[chorus_lines + 1]);
+    amfm_.reset(new AmFm[chorus_lines + 1]);
+    oscph_.reset(new float[chorus_lines + 1]());
+    lines_.reset(new stk::DelayA[chorus_lines]);
 }
 
 Chorus::~Chorus()
@@ -173,13 +195,7 @@ Chorus::~Chorus()
 
 void Chorus::init(double sr)
 {
-    detune_ = 0.001;
     onedsr_ = 1 / sr;
-
-    hilb_.reset(new Hilbert[chorus_lines + 1]);
-    amfm_.reset(new AmFm[chorus_lines + 1]);
-    oscph_.reset(new float[chorus_lines + 1]());
-    lines_.reset(new stk::DelayA[chorus_lines]);
 
     for (unsigned l = 0; l < chorus_lines + 1; ++l) {
         oscph_[l] = 0.0;
@@ -189,6 +205,7 @@ void Chorus::init(double sr)
 
     for (unsigned l = 0; l < chorus_lines; ++l) {
         stk::DelayA &line = lines_[l];
+        line.clear();
         double delay = chorus_delay[l] * sr;
         line.setMaximumDelay((size_t)std::ceil(delay));
         line.setDelay(delay);
