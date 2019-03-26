@@ -98,4 +98,30 @@ private:
     std::unique_ptr<stk::DelayA[]> lines_;
 };
 
+//------------------------------------------------------------------------------
+class Wahwah : public Effect1to1
+{
+public:
+    Wahwah();
+    ~Wahwah();
+    void init(double sr) override;
+    void clear() override;
+    float lfo_rate() const { return lforate_; }
+    void set_lfo_rate(float r) { lforate_ = r; }
+    float lfo_depth() const { return lfodepth_; }
+    void set_lfo_depth(float d) { lfodepth_ = d; }
+protected:
+    void do_process(float *out, const float *in, unsigned nframes) override;
+private:
+    Hilbert hilb_;
+    AmFm amfm_;
+    float oscph_;
+    float output1_;
+    float output2_;
+    float lforate_;
+    float lfodepth_;
+    float lfophase_;
+    float onedsr_;
+};
+
 }  // namespace IF

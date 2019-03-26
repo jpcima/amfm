@@ -6,7 +6,7 @@
 
 include dpf/Makefile.base.mk
 
-PLUGINS := octaver stereo-octaver mutator stereo-mutator chorus stereo-chorus
+PLUGINS := octaver stereo-octaver mutator stereo-mutator chorus stereo-chorus wahwah stereo-wahwah
 
 all: dgl plugins gen
 

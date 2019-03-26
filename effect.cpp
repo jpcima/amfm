@@ -276,3 +276,91 @@ void Chorus::do_process(float *out, const float *in, unsigned nframes)
 }
 
 }  // namespace IF
+
+//------------------------------------------------------------------------------
+namespace IF {
+
+Wahwah::Wahwah()
+{
+    lforate_ = 0.5;   // joe 5.0 // ag 0.5
+    lfodepth_ = 0.8;  // joe 0.5 // ag 0.8
+}
+
+Wahwah::~Wahwah()
+{
+}
+
+void Wahwah::init(double sr)
+{
+    hilb_.init(sr);
+    amfm_.init(sr);
+    oscph_ = 0;
+    output1_ = 0;
+    output2_ = 0;
+    onedsr_ = 1 / sr;
+}
+
+void Wahwah::clear()
+{
+    oscph_ = 0;
+    output1_ = 0;
+    output2_ = 0;
+    hilb_.clear();
+    amfm_.clear();
+}
+
+void Wahwah::do_process(float *out, const float *in, unsigned nframes)
+{
+    float oscph = oscph_;
+    float fltprev1 = output1_;
+    float fltprev2 = output2_;
+    float lforate = lforate_;
+    float lfodepth = lfodepth_;
+    float lfophase = lfophase_;
+    float onedsr = onedsr_;
+    float temp[buffer_max];
+
+    lforate *= onedsr;
+
+    float *hilb_re = out;
+    float *hilb_im = temp;
+    hilb_.process(hilb_re, hilb_im, in, nframes);
+
+    float *am = out;
+    float *fm = temp;
+    amfm_.process(am, fm, hilb_re, hilb_im, nframes);
+
+    for (unsigned i = 0; i < nframes; ++i) {
+        float aam = am[i];
+        float aif = fm[i];
+
+        // tick the LFO
+        float wah = lfodepth * lfophase;
+        lfophase += lforate;
+        lfophase -= (int)lfophase;
+
+        // update time-variant filter
+        double fltg = 0.1 * std::pow(4.0, wah);
+        double fltfr = onedsr * 450.0 * std::exp2(2.3 * wah);
+        double fltq = std::exp2(2.0 * (1.0 - wah) + 1.0);
+        // update coefficients
+        double fltrho = 1.0 - M_PI * fltfr / fltq;
+        double flttheta = 2.0 * M_PI * fltfr;
+        double flta1 = -2.0 * fltrho * std::cos(flttheta);
+        double flta2 = fltrho * fltrho;
+
+        aif = fltg * aif - flta1 * fltprev1 - flta2 * fltprev2;
+        fltprev2 = fltprev1;
+        fltprev1 = aif;
+
+        out[i] = aam * std::sin(float(2 * M_PI) * oscph);
+        oscph += aif * onedsr;
+        oscph -= (int)oscph;
+    }
+
+    output1_ = fltprev1;
+    output2_ = fltprev2;
+    lfophase_ = lfophase;
+}
+
+}  // namespace IF
