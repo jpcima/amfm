@@ -335,7 +335,7 @@ void Wahwah::do_process(float *out, const float *in, unsigned nframes)
         float aif = fm[i];
 
         // tick the LFO
-        float wah = lfodepth * lfophase;
+        float wah = lfodepth * ((lfophase < 0.5f) ? (4 * lfophase) : (4 - 4 * lfophase));
         lfophase += lforate;
         lfophase -= (int)lfophase;
 
