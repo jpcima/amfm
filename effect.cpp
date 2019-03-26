@@ -353,7 +353,7 @@ void Wahwah::do_process(float *out, const float *in, unsigned nframes)
         fltprev2 = fltprev1;
         fltprev1 = aif;
 
-        out[i] = aam * std::sin(float(2 * M_PI) * oscph);
+        out[i] = aam * std::cos(float(2 * M_PI) * oscph);
         oscph += aif * onedsr;
         oscph -= (int)oscph;
     }
