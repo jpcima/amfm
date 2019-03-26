@@ -82,7 +82,7 @@ void Colorizer::do_process(float *out, const float *in, unsigned nframes)
 
         aif *= color;
 
-        out[i] = aam * std::sin(float(2 * M_PI) * oscph);
+        out[i] = aam * std::cos(float(2 * M_PI) * oscph);
         oscph += aif * onedsr;
         oscph -= (int)oscph;
     }
@@ -153,7 +153,7 @@ void Mutator::do_process(float *out, const float *in1, const float *in2, unsigne
         float aam = am1[i];
         float aif = (1 - mix) * fm1[i] + mix * fm2[i];
 
-        out[i] = aam * std::sin(float(2 * M_PI) * oscph);
+        out[i] = aam * std::cos(float(2 * M_PI) * oscph);
         oscph += aif * onedsr;
         oscph -= (int)oscph;
     }
@@ -243,7 +243,7 @@ void Chorus::do_process(float *out, const float *in, unsigned nframes)
         float oscph = oscph_[chorus_lines];
 
         for (unsigned i = 0; i < nframes; ++i) {
-            out[i] = amgain * am[i] * std::sin(float(2 * M_PI) * oscph);
+            out[i] = amgain * am[i] * std::cos(float(2 * M_PI) * oscph);
             oscph += fm[i] * onedsr;
             oscph -= (int)oscph;
         }
@@ -266,7 +266,7 @@ void Chorus::do_process(float *out, const float *in, unsigned nframes)
         float det = detune * chorus_detune_mult[l];
 
         for (unsigned i = 0; i < nframes; ++i) {
-            out[i] += amgain * am[i] * std::sin((1 + det) * float(2 * M_PI) * oscph);
+            out[i] += amgain * am[i] * std::cos((1 + det) * float(2 * M_PI) * oscph);
             oscph += fm[i] * onedsr;
             oscph -= (int)oscph;
         }
